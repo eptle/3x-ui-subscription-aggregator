@@ -42,7 +42,6 @@ class Async3xuiApi:
         await self.client.aclose()
 
     async def get_session_token(self):
-        print(self.panel_url, self.subscription_url)
         response = await self.client.post(
             f"{self.panel_url}/login",
             data={
@@ -51,26 +50,19 @@ class Async3xuiApi:
                 "twoFactorCode": "",
             },
         )
-        print("кал -1")
         response.raise_for_status()
-        print("кал 0")
         set_cookie = response.headers.get("set-cookie")
-        print("кал 1")
         if not set_cookie:
             raise RuntimeError("No Set-Cookie header from server")
-        print("кал 2")
         token = None
         for param in set_cookie.split(";"):
             if param.strip().startswith("3x-ui="):
                 token = param.split("=", 1)[1]
-                print(f"кал 3, {token}")
                 break
-        print("кал 4")
         if not token:
             raise RuntimeError("3x-ui cookie not found in Set-Cookie")
-        print("кал 5")
-        self.token = token
 
+        self.token = token
 
     async def add_client_to_inbound(
             self,
@@ -130,11 +122,11 @@ class Async3xuiApi:
 if __name__ == "__main__":
     for i, ip in enumerate(Config.VPS):
         xui = Async3xuiApi(
-                username=Config.LOGIN[i],
-                password=Config.PASSWORD[i],
-                ip=ip,
-                panel_port=Config.PANEL_PORTS[i],
-                web_path=Config.WEB_PATHS[i],
-                subscription_port=Config.SUB_PORTS[i],
-                subscription_url=Config.SUB_URL
-            )
+            username=Config.LOGIN[i],
+            password=Config.PASSWORD[i],
+            ip=ip,
+            panel_port=Config.PANEL_PORTS[i],
+            web_path=Config.WEB_PATHS[i],
+            subscription_port=Config.SUB_PORTS[i],
+            subscription_url=Config.SUB_URL
+        )
