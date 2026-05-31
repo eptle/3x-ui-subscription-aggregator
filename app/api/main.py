@@ -1,8 +1,9 @@
-import json
 import copy
 import logging
+import base64
 
-from fastapi import FastAPI, Query, HTTPException
+from fastapi import FastAPI, Query, HTTPException, Response
+from typing import Annotated
 
 from config import Config
 from app.xui.xuiApiInterface import Async3xuiApi
@@ -16,13 +17,18 @@ SOLO_CONFIG_PATH = "solo_config.json"
 
 
 @app.get("/create-client")
-async def create_client(name: str = Query(...)):
+async def create_client(
+    name: str = Query(max_length=50),
+    vless: Annotated[bool, Query(...)] = False
+):
     config = load_config(CONFIG_PATH)
     solo_config_list = list()
     base_solo_config = load_config(SOLO_CONFIG_PATH)
 
     outbounds = config.get("outbounds", [])
     selectors = list()
+    if vless:
+        vless_keys = list()
 
     if not (
         len(Config.VPS)
@@ -51,12 +57,18 @@ async def create_client(name: str = Query(...)):
 
         try:
             async with xui:
-                await xui.get_session_token()
-                await xui.add_client_to_inbound(
-                    client_name=name,
-                    inbound_id=Config.INBOUND_IDS[i]
-                )
-                key = await xui.get_key(name)
+                try:
+                    await xui.get_session_token()
+                    await xui.add_client_to_inbound(
+                        client_name=name,
+                        inbound_id=Config.INBOUND_IDS[i]
+                    )
+                    key = await xui.get_key(name)
+                except:
+                    break
+
+                if vless:
+                    vless_keys.append(key)
                 parsed = parse_vless(key)
                 outbound = build_vless_outbound(
                     parsed=parsed
@@ -77,4 +89,12 @@ async def create_client(name: str = Query(...)):
     config["outbounds"] = outbounds
     config["routing"]["balancers"][0]["selector"] = selectors
 
-    return [config, *solo_config_list]
+    data = vless_keys if vless else [config, *solo_config_list]
+
+    if vless:
+        text = "\n".join(s.strip() for s in data if s)
+        encoded = base64.b64encode(text.encode("utf-8")).decode("utf-8")
+
+        return Response(content=encoded, media_type="text/plain")
+
+    return data
