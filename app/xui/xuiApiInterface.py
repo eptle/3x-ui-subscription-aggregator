@@ -117,16 +117,3 @@ class Async3xuiApi:
         return base64.b64decode(
             response.text
         ).decode("utf-8")
-
-
-if __name__ == "__main__":
-    for i, ip in enumerate(Config.VPS):
-        xui = Async3xuiApi(
-            username=Config.LOGIN[i],
-            password=Config.PASSWORD[i],
-            ip=ip,
-            panel_port=Config.PANEL_PORTS[i],
-            web_path=Config.WEB_PATHS[i],
-            subscription_port=Config.SUB_PORTS[i],
-            subscription_url=Config.SUB_URL
-        )
