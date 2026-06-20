@@ -88,6 +88,7 @@ async def create_client(
 
     config["outbounds"] = outbounds
     config["routing"]["balancers"][0]["selector"] = selectors
+    config["observatory"]["subjectSelector"] = selectors
 
     data = vless_keys if vless else [config, *solo_config_list]
 
