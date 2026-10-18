@@ -1,6 +1,7 @@
 services:
   app:
     build: .
+    restart: unless-stopped
     env_file:
       - .env
     container_name: fastapi_app
@@ -9,6 +10,7 @@ services:
 
   nginx:
     image: nginx:latest
+    restart: unless-stopped
     container_name: nginx_proxy
     ports:
       - "80:80"
@@ -22,6 +24,7 @@ services:
 
   certbot:
     image: certbot/certbot
+    restart: unless-stopped
     container_name: certbot
     volumes:
       - ./certs:/etc/letsencrypt
