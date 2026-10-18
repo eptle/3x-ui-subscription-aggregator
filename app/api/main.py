@@ -30,28 +30,14 @@ async def create_client(
     if vless:
         vless_keys = list()
 
-    if not (
-        len(Config.VPS)
-        == len(Config.LOGIN)
-        == len(Config.PASSWORD)
-        == len(Config.INBOUND_IDS)
-        == len(Config.PANEL_PORTS)
-        == len(Config.WEB_PATHS)
-        == len(Config.SUB_PORTS)
-    ):
-        raise HTTPException(
-            status_code=500,
-            detail="Config arrays length mismatch"
-        )
-
     for i, ip in enumerate(Config.VPS):
         xui = Async3xuiApi(
-            username=Config.LOGIN[i],
-            password=Config.PASSWORD[i],
+            username=Config.LOGIN,
+            password=Config.PASSWORD,
             ip=ip,
-            panel_port=Config.PANEL_PORTS[i],
-            web_path=Config.WEB_PATHS[i],
-            subscription_port=Config.SUB_PORTS[i],
+            panel_port=Config.PANEL_PORTS,
+            web_path=Config.WEB_PATHS,
+            subscription_port=Config.SUB_PORTS,
             subscription_url=Config.SUB_URL
         )
 
@@ -61,7 +47,7 @@ async def create_client(
                     await xui.get_session_token()
                     await xui.add_client_to_inbound(
                         client_name=name,
-                        inbound_id=Config.INBOUND_IDS[i]
+                        inbound_id=Config.INBOUND_IDS
                     )
                     key = await xui.get_key(name)
                 except:
