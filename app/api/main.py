@@ -30,16 +30,17 @@ async def create_client(
     if vless:
         vless_keys = list()
 
+    xui = Async3xuiApi(
+                username=Config.LOGIN,
+                password=Config.PASSWORD,
+                panel_port=Config.PANEL_PORTS,
+                web_path=Config.WEB_PATHS,
+                subscription_port=Config.SUB_PORTS,
+                subscription_url=Config.SUB_URL
+            )
+
     for i, ip in enumerate(Config.VPS):
-        xui = Async3xuiApi(
-            username=Config.LOGIN,
-            password=Config.PASSWORD,
-            ip=ip,
-            panel_port=Config.PANEL_PORTS,
-            web_path=Config.WEB_PATHS,
-            subscription_port=Config.SUB_PORTS,
-            subscription_url=Config.SUB_URL
-        )
+        xui.ip = ip
 
         try:
             async with xui:
@@ -55,6 +56,7 @@ async def create_client(
 
                 if vless:
                     vless_keys.append(key)
+                    break
                 parsed = parse_vless(key)
                 outbound = build_vless_outbound(
                     parsed=parsed
